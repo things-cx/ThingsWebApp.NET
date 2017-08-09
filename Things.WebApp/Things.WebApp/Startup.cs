@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace Things.WebApp
 {
@@ -32,12 +35,42 @@ namespace Things.WebApp
                 Rules =
                 {
                     new RewriteRule(@"^(?!.*(assets\/.*|.chunk.js|.bundle.js|.bundle.map|.bundle.js.gz|.bundle.css|.bundle.css.gz|.png|.jpg|.ico|.json)).*$", "/", true)
-
                 }
             });
 
-            //TODO: I think I should change this!
-            app.UseFileServer();
+            //Try to use app.Use()
+            //TODO: think about looking at context.Request.Headers["accept-language"] as well!
+
+            app.MapWhen(context => String.IsNullOrWhiteSpace(context.Request.Cookies["lang"]), HandleEnBranch);
+            app.MapWhen(context => context.Request.Cookies["lang"] == "en", HandleEnBranch);
+            app.MapWhen(context => context.Request.Cookies["lang"] == "af", HandleAfBranch);
+
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("No lnaguage found");
+            });
         }
+
+        #region Cultures
+
+        private static void HandleEnBranch(IApplicationBuilder app)
+        {
+            app.UseFileServer(new FileServerOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/en")),
+                EnableDefaultFiles = true
+            });
+        }
+
+        private static void HandleAfBranch(IApplicationBuilder app)
+        {
+            app.UseFileServer(new FileServerOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/af")),
+                EnableDefaultFiles = true
+            });
+        }
+
+        #endregion
     }
 }
