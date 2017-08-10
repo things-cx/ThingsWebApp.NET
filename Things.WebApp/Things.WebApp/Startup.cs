@@ -42,8 +42,8 @@ namespace Things.WebApp
             //TODO: think about looking at context.Request.Headers["accept-language"] as well!
 
             app.MapWhen(context => String.IsNullOrWhiteSpace(context.Request.Cookies["lang"]), HandleEnBranch);
-            app.MapWhen(context => context.Request.Cookies["lang"] == "en", HandleEnBranch);
-            app.MapWhen(context => context.Request.Cookies["lang"] == "af", HandleAfBranch);
+            app.MapWhen(context => context.Request.Cookies["lang"] == "en-US", HandleEnBranch);
+            app.MapWhen(context => context.Request.Cookies["lang"] == "af-ZA", HandleAfBranch);
 
             app.Run(async context =>
             {
@@ -57,7 +57,7 @@ namespace Things.WebApp
         {
             app.UseFileServer(new FileServerOptions()
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/en")),
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/en-US")),
                 EnableDefaultFiles = true
             });
         }
@@ -66,7 +66,7 @@ namespace Things.WebApp
         {
             app.UseFileServer(new FileServerOptions()
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/af")),
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot/af-ZA")),
                 EnableDefaultFiles = true
             });
         }
